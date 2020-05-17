@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <random>
 
-#include "structures.h"
+#include "minesweeper_gameboard.h"
 
 // constructor
 minesweeper_gameboard::minesweeper_gameboard(int side_length, std::string difficulty) {
@@ -183,7 +183,7 @@ bool minesweeper_gameboard::visited_all_empty_tiles() {
 
 }
 
-void minesweeper_gameboard::step(std::queue<std::vector<int>> ordered_pair_queue) {
+void minesweeper_gameboard::step(std::queue<std::vector<int> > ordered_pair_queue) {
 
         int x, y;
         std::string turn_type;
@@ -237,9 +237,9 @@ void minesweeper_gameboard::step(std::queue<std::vector<int>> ordered_pair_queue
         std::cout << "You can mark " << _num_mines - _num_marked << " more squares." << std::endl;
 }
 
-void minesweeper_gameboard::surveil_region(std::queue<std::vector<int>> current_ordered_pair_queue) {
+void minesweeper_gameboard::surveil_region(std::queue<std::vector<int> > current_ordered_pair_queue) {
     
-    std::queue<std::vector<int>> updated_ordered_pair_queue;
+    std::queue<std::vector<int> > updated_ordered_pair_queue;
     updated_ordered_pair_queue = uncover_tiles(current_ordered_pair_queue);
 
     if (!updated_ordered_pair_queue.empty()) {
@@ -250,12 +250,12 @@ void minesweeper_gameboard::surveil_region(std::queue<std::vector<int>> current_
 
 }
 
-std::queue<std::vector<int>> minesweeper_gameboard::uncover_tiles(std::queue<std::vector<int>> ordered_pair_queue) {
+std::queue<std::vector<int> > minesweeper_gameboard::uncover_tiles(std::queue<std::vector<int> > ordered_pair_queue) {
 
     int x, y, xx, yy;
     int minecount = 0;
     std::vector<int> neighbor;
-    std::queue<std::vector<int>> neighbors;
+    std::queue<std::vector<int> > neighbors;
 
     x = ordered_pair_queue.front()[0];
     y = ordered_pair_queue.front()[1];

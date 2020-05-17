@@ -4,7 +4,7 @@
 #include <string>
 #include <queue>
 
-#include "structures.h"
+#include "minesweeper_gameboard.h"
 #include "tile.h"
 
 using namespace std;
@@ -13,7 +13,7 @@ int main()
 {
 
     //std::vector<int> coord_ordered_pair;
-    std::queue<std::vector<int>> op_queue;
+    std::queue<std::vector<int> > op_queue;
 
     // declare gameboard
     minesweeper_gameboard myGameboard(25, "Easy");

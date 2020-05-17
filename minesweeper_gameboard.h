@@ -34,9 +34,9 @@ class minesweeper_gameboard {
         void calc_num_mines();
         void populate_board_with_mines();
 
-        void step(std::queue<std::vector<int>> ordered_pair_queue);
-        void surveil_region(std::queue<std::vector<int>> ordered_pair_queue);
-        std::queue<std::vector<int>> uncover_tiles(std::queue<std::vector<int>> ordered_pair_queue);
+        void step(std::queue<std::vector<int> > ordered_pair_queue);
+        void surveil_region(std::queue<std::vector<int> > ordered_pair_queue);
+        std::queue<std::vector<int> > uncover_tiles(std::queue<std::vector<int> > ordered_pair_queue);
 
         void visit_tile(int x, int y);
         bool visited_all_empty_tiles();
