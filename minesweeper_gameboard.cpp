@@ -24,8 +24,6 @@ minesweeper_gameboard::minesweeper_gameboard(int side_length, std::string diffic
 
     _num_tiles = pow(_side_length, 2);
 
-    std::cout << "num_tiles = " << _num_tiles << std::endl;
-
     minesweeper_gameboard::calc_num_mines();
     _num_empty_tiles = _num_tiles - _num_mines;
     _num_visited = 0;
@@ -54,7 +52,7 @@ void minesweeper_gameboard::print_num_mines() {
 
 }
 
-void minesweeper_gameboard::show_mine_board() {
+void minesweeper_gameboard::show_truth_board() {
 
     for (int i = 0; i < _side_length; i++) {
         for (int j = 0; j < _side_length; j++) {
@@ -139,8 +137,6 @@ void minesweeper_gameboard::populate_board_with_mines() {
         mine_row = flattened_indices[i] % _side_length;
         mine_col = flattened_indices[i] / _side_length;
 
-        std::cout << mine_row << "," << mine_col << std::endl;
-
         _gameboard[mine_row][mine_col].set_mine();
 
     }   
@@ -183,13 +179,33 @@ bool minesweeper_gameboard::visited_all_empty_tiles() {
 
 }
 
+void minesweeper_gameboard::fail_on_tile_and_exit(int x, int y) {
+
+    visit_tile(x, y);
+    show_text_board();
+
+    std::cout << "You lose!" << std::endl;
+    exit(EXIT_SUCCESS);
+
+}
+
+void minesweeper_gameboard::check_for_win() {
+
+    if (visited_all_empty_tiles()) {
+        std::cout << "You win!" << std::endl;
+        exit(EXIT_SUCCESS);
+    }
+    
+}
+
 void minesweeper_gameboard::step(std::queue<std::vector<int> > ordered_pair_queue) {
 
         int x, y;
         std::string turn_type;
         std::vector<int> op;
+        std::queue<std::vector<int> > updated_ordered_pair_queue;
 
-        std::cout << "Turn type? < click (c) > or < mark (m) > :" << std::endl;
+        std::cout << "Turn type? < click (c) >, < explore region (e)>, or < mark (m) > :" << std::endl;
         std::cin >> turn_type;
 
         /* this looks flipped, but recall that c++'s indexing flips x,y and i,j */
@@ -204,53 +220,78 @@ void minesweeper_gameboard::step(std::queue<std::vector<int> > ordered_pair_queu
             toggle_mark_tile(x, y);
             show_text_board();
 
-        } else if (turn_type == "c") {        
+        } else {
 
-            if (_gameboard[x][y].get_marked()) {
-                std::cout << "Can't click a marked square!" << std::endl;
-            } else {
-                if (_gameboard[x][y].get_mine()) {
+            op.push_back(x);
+            op.push_back(y);
+            ordered_pair_queue.push(op);            
 
-                    visit_tile(x, y);
+            if (turn_type == "c") {        
+
+                if (_gameboard[x][y].get_marked()) {
+                    std::cout << "Can't click a marked square!" << std::endl;
+                } else {
+                    if (_gameboard[x][y].get_mine()) {
+
+                        fail_on_tile_and_exit(x, y);
+        
+                    }
+
+                    /* op.push_back(x);
+                       op.push_back(y);
+                       ordered_pair_queue.push(op); */
+
+                    std::cout << ordered_pair_queue.front()[0] << ", " << ordered_pair_queue.front()[1] << std::endl;
+        
+                    surveil_region(ordered_pair_queue, turn_type);
                     show_text_board();
-                    std::cout << "You lose!" << std::endl;
-                    exit(EXIT_SUCCESS);
+                    check_for_win();
         
+                    /* if (visited_all_empty_tiles()) {
+                           std::cout << "You win!" << std::endl;
+                           exit(EXIT_SUCCESS);
+                       } */
+                }
+            } else if (turn_type == "e") {
+
+                if (_gameboard[x][y].get_marked()) {
+                    std::cout << "Can't click a marked square!" << std::endl;
+                } else if (!_gameboard[x][y].get_visited()) {
+                    /* do nothing */
+                } else {
+                    /* the tile has been visited and is not marked */
+
+                    // - explode all not-visited, not-covered tiles
+                    /* op.push_back(x);
+                       op.push_back(y);
+                       ordered_pair_queue.push(op); */
+                    updated_ordered_pair_queue = uncover_tiles(ordered_pair_queue, "e");
+                    // - run 'surveil_region' with these tiles as the op_queue
+                    surveil_region(updated_ordered_pair_queue, "c");
+                    show_text_board();
+                    check_for_win();
                 }
 
-                op.push_back(x);
-                op.push_back(y);
-                ordered_pair_queue.push(op);
-
-                std::cout << ordered_pair_queue.front()[0] << ", " << ordered_pair_queue.front()[1] << std::endl;
-        
-                surveil_region(ordered_pair_queue);
-                show_text_board();
-        
-                if (visited_all_empty_tiles()) {
-                    std::cout << "You win!" << std::endl;
-                    exit(EXIT_SUCCESS);
-                }
             }
         }
 
         std::cout << "You can mark " << _num_mines - _num_marked << " more squares." << std::endl;
 }
 
-void minesweeper_gameboard::surveil_region(std::queue<std::vector<int> > current_ordered_pair_queue) {
+void minesweeper_gameboard::surveil_region(std::queue<std::vector<int> > current_ordered_pair_queue, std::string turn_type) {
     
     std::queue<std::vector<int> > updated_ordered_pair_queue;
-    updated_ordered_pair_queue = uncover_tiles(current_ordered_pair_queue);
+    updated_ordered_pair_queue = uncover_tiles(current_ordered_pair_queue, turn_type);
 
     if (!updated_ordered_pair_queue.empty()) {
-        surveil_region(updated_ordered_pair_queue);
+        surveil_region(updated_ordered_pair_queue, turn_type);
     } else {
         return;
     }
 
 }
 
-std::queue<std::vector<int> > minesweeper_gameboard::uncover_tiles(std::queue<std::vector<int> > ordered_pair_queue) {
+std::queue<std::vector<int> > minesweeper_gameboard::uncover_tiles(std::queue<std::vector<int> > ordered_pair_queue, std::string turn_type) {
 
     int x, y, xx, yy;
     int minecount = 0;
@@ -269,8 +310,13 @@ std::queue<std::vector<int> > minesweeper_gameboard::uncover_tiles(std::queue<st
         for (int j = y - 1; j <= y + 1; j++ ) {
             if (i >= 0 && i < _side_length && j >=0 && j < _side_length && !(i == x && j == y)) {
                 if (_gameboard[i][j].get_mine()) {
-
-                    minecount += 1;    
+                    if (turn_type == "c") {
+                        minecount += 1;
+                    } else if (turn_type == "e") {
+                        if (! _gameboard[i][j].get_marked()) {
+                            fail_on_tile_and_exit(i, j);
+                        }
+                    }   
 
                 } else if (! _gameboard[i][j].get_visited()) {
 
@@ -302,7 +348,9 @@ std::queue<std::vector<int> > minesweeper_gameboard::uncover_tiles(std::queue<st
 
         }
     }
-    _gameboard[x][y].set_num_neighbor_mines(minecount);
+    if (! _gameboard[x][y].get_neighbor_mines_counted()) {
+        _gameboard[x][y].set_num_neighbor_mines(minecount);
+    }
 
     return(ordered_pair_queue);
 

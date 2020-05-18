@@ -28,20 +28,22 @@ class minesweeper_gameboard {
         void print_difficulty();
         void print_num_mines();
         
-        void show_mine_board();
+        void show_truth_board();
         void show_text_board();
 
         void calc_num_mines();
         void populate_board_with_mines();
 
         void step(std::queue<std::vector<int> > ordered_pair_queue);
-        void surveil_region(std::queue<std::vector<int> > ordered_pair_queue);
-        std::queue<std::vector<int> > uncover_tiles(std::queue<std::vector<int> > ordered_pair_queue);
+        void surveil_region(std::queue<std::vector<int> > ordered_pair_queue, std::string turn_type);
+        std::queue<std::vector<int> > uncover_tiles(std::queue<std::vector<int> > ordered_pair_queue, std::string turn_type);
 
         void visit_tile(int x, int y);
         bool visited_all_empty_tiles();
 
         void toggle_mark_tile(int x, int y);
+        void fail_on_tile_and_exit(int x, int y);
+        void check_for_win();
 };
 
 #endif
