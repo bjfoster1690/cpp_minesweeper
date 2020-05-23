@@ -17,15 +17,9 @@ int main()
 
     // declare gameboard
     minesweeper_gameboard myGameboard(25, "Easy");
-    
-    // display difficulty
-    // myGameboard.print_num_mines();
 
     // display user-facing gameboard
     myGameboard.show_text_board();
-
-    // display truth board
-    // myGameboard.show_truth_board();
 
     while(1) {
         

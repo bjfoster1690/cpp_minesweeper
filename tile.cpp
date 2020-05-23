@@ -17,6 +17,9 @@ tile::tile(bool mine) {
 
     tile::set_mine();
     _visited = false;
+    _marked = false;
+    _neighbor_mines_counted = false;
+    _num_neighbors_marked = 0;
 
 }
 
@@ -59,6 +62,24 @@ void tile::unmark() {
 bool tile::get_marked() {
 
     return _marked;
+
+}
+
+void tile::mark_neighbor() {
+
+    _num_neighbors_marked += 1;
+
+}
+
+void tile::unmark_neighbor() {
+
+    _num_neighbors_marked -= 1;
+
+}
+
+int tile::get_num_marked_neighbors() {
+
+    return _num_neighbors_marked;
 
 }
 

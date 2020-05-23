@@ -9,7 +9,9 @@ class tile {
         bool _visited;
         bool _marked;
         bool _neighbor_mines_counted;
+
         int _num_neighbor_mines;
+        int _num_neighbors_marked;
     
     public:
 
@@ -28,6 +30,10 @@ class tile {
         void set_num_neighbor_mines(int num_mines);
         bool get_neighbor_mines_counted();
         int get_num_neighbor_mines();
+
+        void mark_neighbor();
+        void unmark_neighbor();
+        int get_num_marked_neighbors();
         
         void print_mine_status();
 

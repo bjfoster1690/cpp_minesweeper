@@ -157,9 +157,28 @@ void minesweeper_gameboard::toggle_mark_tile(int x, int y) {
             if (!_gameboard[x][y].get_marked()) {
                 _num_marked += 1;
                 _gameboard[x][y].mark();
+
+                for (int i = x - 1; i <= x + 1; i++ ) {
+                    for (int j = y - 1; j <= y + 1; j++ ) {
+                        if (i >= 0 && i < _side_length && j >=0 && j < _side_length && !(i == x && j == y)) {
+
+                            _gameboard[i][j].mark_neighbor();
+
+                        }
+                    }
+                }
             } else {
                 _num_marked -= 1;
                 _gameboard[x][y].unmark();
+                for (int i = x - 1; i <= x + 1; i++ ) {
+                    for (int j = y - 1; j <= y + 1; j++ ) {
+                        if (i >= 0 && i < _side_length && j >=0 && j < _side_length && !(i == x && j == y)) {
+                        
+                            _gameboard[i][j].unmark_neighbor();
+
+                        }
+                    }
+                }
             }
         } else {
             std::cout << "Sorry, can't mark any more mines." << std::endl;
@@ -237,20 +256,12 @@ void minesweeper_gameboard::step(std::queue<std::vector<int> > ordered_pair_queu
         
                     }
 
-                    /* op.push_back(x);
-                       op.push_back(y);
-                       ordered_pair_queue.push(op); */
-
                     std::cout << ordered_pair_queue.front()[0] << ", " << ordered_pair_queue.front()[1] << std::endl;
         
                     surveil_region(ordered_pair_queue, turn_type);
                     show_text_board();
                     check_for_win();
-        
-                    /* if (visited_all_empty_tiles()) {
-                           std::cout << "You win!" << std::endl;
-                           exit(EXIT_SUCCESS);
-                       } */
+
                 }
             } else if (turn_type == "e") {
 
@@ -258,16 +269,19 @@ void minesweeper_gameboard::step(std::queue<std::vector<int> > ordered_pair_queu
                     std::cout << "Can't click a marked square!" << std::endl;
                 } else if (!_gameboard[x][y].get_visited()) {
                     /* do nothing */
+                } else if (_gameboard[x][y].get_num_neighbor_mines() != _gameboard[x][y].get_num_marked_neighbors()){
+                    /* do nothing */
                 } else {
                     /* the tile has been visited and is not marked */
 
                     // - explode all not-visited, not-covered tiles
-                    /* op.push_back(x);
-                       op.push_back(y);
-                       ordered_pair_queue.push(op); */
                     updated_ordered_pair_queue = uncover_tiles(ordered_pair_queue, "e");
-                    // - run 'surveil_region' with these tiles as the op_queue
-                    surveil_region(updated_ordered_pair_queue, "c");
+                    /* - once we've checked out the initial tile, run 'surveil_region' on enqueued neighbor tiles.
+                       - if there are neighbors are visited / marked, do nothing */
+                    if (!updated_ordered_pair_queue.empty()) {
+                        surveil_region(updated_ordered_pair_queue, "c");
+                    }
+                    
                     show_text_board();
                     check_for_win();
                 }
@@ -332,9 +346,7 @@ std::queue<std::vector<int> > minesweeper_gameboard::uncover_tiles(std::queue<st
     }
 
     if (minecount == 0) {
-        
         while(!neighbors.empty()) {
-
             ordered_pair_queue.push(neighbors.front());
             
             xx = neighbors.front()[0];
@@ -343,15 +355,12 @@ std::queue<std::vector<int> > minesweeper_gameboard::uncover_tiles(std::queue<st
             if (! _gameboard[xx][yy].get_visited()) {
                 visit_tile(xx, yy);
             }  
-
             neighbors.pop(); 
-
         }
     }
     if (! _gameboard[x][y].get_neighbor_mines_counted()) {
         _gameboard[x][y].set_num_neighbor_mines(minecount);
     }
-
     return(ordered_pair_queue);
 
 }
